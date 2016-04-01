@@ -15,8 +15,8 @@
 #define PWM_OVERLAY_FILE        "pwm_test_" //!< Begining of device tree overlay name
 #define MAX_BUF                1024 //!< Used in setting the buffer size.
 #define RETRIES                100 //!< PWM system files have an index appended to the end of the folder name. normally 1 - 99, RETRIES is used to find that index.
-#define MOTOR_STEPSMOOTH        500        //<!-- Default Value to slow down the motors smoothly.
-#define MOTOR_STEPURGENT        1000    //<!-- Default Value to slow down the motors urgently.
+#define MAX_DUTY               150000
+#define MIN_DUTY               700000
 
 #include <iostream>
 #include <exception>
@@ -74,6 +74,7 @@ public:
      \brief PWM_PeriodVal - the two settings available for the Period Value of the motor.
      */
     enum PWM_PeriodValues {
+        STARTUP = 1200000,
         ACTIVE = 1900000,
         INACTIVE = 0,
     };

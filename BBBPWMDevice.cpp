@@ -223,7 +223,6 @@ int BBBPWMDevice::PWM_SetPeriodVal( PWM_PeriodValues PWM_PeriodVal ) {
  */
 void BBBPWMDevice::PWM_SetTargetSpeed( int TargetSpeed ) {
     this->PWM_TargetSpeed = TargetSpeed;
-    this->PWM_StartThread( );
 }
 
 /**
@@ -236,23 +235,25 @@ void BBBPWMDevice::PWM_SetTargetSpeed( int TargetSpeed ) {
 void* BBBPWMDevice::PWM_SetDutyVal( void *pwm_inst ) {
     BBBPWMDevice* PWM_Device = (BBBPWMDevice*)pwm_inst;
 
-    while( PWM_Device->PWM_GetDutyVal( ) != PWM_Device->PWM_TargetSpeed ) {
+    while( 1 ) {
+        if( PWM_Device->PWM_GetDutyVal( ) != PWM_Device->PWM_TargetSpeed ) {
+            try {
 
-        try {
-            PWM_Device->PWM_DutyVal = ( PWM_Device->PWM_DutyVal < PWM_Device->PWM_TargetSpeed ) ? PWM_Device->PWM_DutyVal + MOTOR_STEPSMOOTH : PWM_Device->PWM_DutyVal - MOTOR_STEPSMOOTH;
-
-            if( abs( PWM_Device->PWM_DutyVal - PWM_Device->PWM_TargetSpeed ) < MOTOR_STEPSMOOTH )
                 PWM_Device->PWM_DutyVal = PWM_Device->PWM_TargetSpeed;
+                if( PWM_Device->PWM_DutyVal < MAX_DUTY ) PWM_Device->PWM_DutyVal = MAX_DUTY;
+                if( PWM_Device->PWM_DutyVal > MIN_DUTY ) PWM_Device->PWM_DutyVal = MIN_DUTY;
+                PWM_Device->PWM_SetFileHandle( PWM_Device->duty_file_loc.c_str( ));
+                PWM_Device->PWM_WriteToFile( PWM_Device->PWM_Buffer,
+                                             snprintf( PWM_Device->PWM_Buffer, sizeof( PWM_Device->PWM_Buffer ), "%d",
+                                                       PWM_Device->PWM_DutyVal ));
+            }
+            catch( exception &e ) {
+                cerr << "An exception occurred : Unable to edit PWM Duty. | " << e.what( ) << endl;
+            }
 
-            PWM_Device->PWM_SetFileHandle( PWM_Device->duty_file_loc.c_str( ) );
-            PWM_Device->PWM_WriteToFile( PWM_Device->PWM_Buffer, snprintf( PWM_Device->PWM_Buffer, sizeof( PWM_Device->PWM_Buffer ), "%d", PWM_Device->PWM_DutyVal ) );
         }
-        catch ( exception& e ) {
-            cerr << "An exception occurred : Unable to edit PWM Duty. | " << e.what( ) << endl;
-        }
-
     }
-    pthread_exit( NULL );
+    //pthread_exit( NULL );
 
     return 0;
 }
@@ -329,6 +330,8 @@ int BBBPWMDevice::PWM_Init( ) {
         cerr << "Critical Error 4 : Unable to use PWM on your BeagleBone Black, sys error - unable to load PWM values on initialisation." << endl;
         exit( 1 );
     }
+
+    this->PWM_StartThread( );
 
     return 1;
 }
