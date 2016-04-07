@@ -11,10 +11,10 @@
 using namespace std;
 
 int main ( void ) {
-
+    //QBBBP = new BBBPWMDevice;
     BBBPWMDevice QBBBP( );
 /*
-    QBBBP.PWM_SetDutyVal( 50000 );
+ *  QBBBP.PWM_SetDutyVal( 50000 );
 	QBBBP.PWM_SetPeriodVal( 1350000 );
 	QBBBP.PWM_SetRunVal( 1 );
 
